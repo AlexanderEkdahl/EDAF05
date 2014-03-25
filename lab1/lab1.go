@@ -48,7 +48,7 @@ func (m *match) match() {
 }
 
 func (m *match) print(output io.Writer) {
-	for i := 1; i <= m.n * 2; i += 2 {
+	for i := 1; i <= m.n*2; i += 2 {
 		fmt.Fprintf(output, "%s -- %s\n", m.males[i].name, m.males[i].match.name)
 	}
 }
