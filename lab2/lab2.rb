@@ -1,15 +1,16 @@
 require 'rgl/adjacency'
-require 'rgl/dot'
+# require 'rgl/dot'
 require 'rgl/traversal'
 
 def distance(graph, a, b)
-  distance = 0
+  # v = graph.instance_variable_get(:@vertice_dict)[a]
+  iterator = graph.bfs_iterator(a)
+  iterator.attach_distance_map
 
-  graph.bfs_iterator(a).each do |vertex|
+  iterator.each do |vertex|
     if vertex == b
-      return distance
+      return iterator.distance_to_root(vertex) - 1
     end
-    distance += 1
   end
 
   return -1
@@ -24,7 +25,7 @@ File.foreach(ARGV[0]).each do |line|
   graph.add_vertex(word)
 
   wordx2 = word * 2
-  incoming_keys = (0..word.length).map { |x| wordx2[x..x+3].chars.sort.join }
+  incoming_keys = (0..word.length).map { |x| wordx2[x..x + 3].chars.sort.join }
 
   incoming_keys.each do |key|
     if incoming.has_key?(key)
@@ -51,4 +52,4 @@ while input = STDIN.gets
   puts distance(graph, *input.chomp.split)
 end
 
-graph.write_to_graphic_file('svg')
+# graph.write_to_graphic_file('svg')
