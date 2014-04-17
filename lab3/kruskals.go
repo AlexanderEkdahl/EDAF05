@@ -49,12 +49,12 @@ func union(x, y *disjoint) {
 	}
 }
 
-type edgesSorter []edge
-
 type edge struct {
 	a, b   *disjoint
 	weight int
 }
+
+type edgesSorter []edge
 
 func (e edgesSorter) Len() int           { return len(e) }
 func (e edgesSorter) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
