@@ -30,7 +30,6 @@ type match struct {
 func (m *match) match() {
 	for m.available.Len() > 0 {
 		male := m.available.Pop().(*male)
-	retry:
 		wife := m.females[male.rankings[male.next]]
 		male.next++
 
@@ -42,14 +41,14 @@ func (m *match) match() {
 			male.match = wife
 			wife.match = male
 		} else {
-			goto retry
+			m.available.Push(male)
 		}
 	}
 }
 
 func (m *match) print(output io.Writer) {
 	for i := 1; i <= m.n*2; i += 2 {
-		fmt.Fprintf(output, "%s -- %s\n", m.males[i].name, m.males[i].match.name)
+		fmt.Fprintln(output, m.males[i].name, "--", m.males[i].match.name)
 	}
 }
 
