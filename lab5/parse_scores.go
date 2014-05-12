@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"io"
+	"strconv"
 	"text/scanner"
 )
 
@@ -20,8 +20,6 @@ func parseComment(p *parser) stateFn {
 	}
 
 	for p.s.Scan() != '\n' {
-		// Consume both \r\n - why is this required?
-		// p.s.Scan()
 	}
 
 	return parseComment
@@ -38,15 +36,29 @@ func parseHeader(p *parser) stateFn {
 }
 
 func parseValues(p *parser) stateFn {
-	if p.s.Peek() == '\n' {
-		fmt.Println("the end")
+	if p.s.Peek() == scanner.EOF {
 		return nil
 	}
 
-	for p.s.Scan() != '\n' {
-	}
+	h := p.s.Scan()
+	i := 0
+	for {
+		r := p.s.Scan()
 
-	fmt.Println("new values")
+		if r == '\n' {
+			break
+		}
+
+		sign := 1
+		if r == '-' {
+			sign = -1
+			r = p.s.Scan()
+		}
+
+		n, _ := strconv.Atoi(p.s.TokenText())
+		p.scores[string([]rune{h, p.header[i]})] = n * sign
+		i++
+	}
 
 	return parseValues
 }
@@ -61,7 +73,6 @@ func parseScores(r io.Reader) map[string]int {
 	p.s.Whitespace = 1<<'\t' | 1<<'\r' | 1<<' '
 
 	for state := parseComment; state != nil; {
-		fmt.Printf("%g\n", state)
 		state = state(p)
 	}
 
