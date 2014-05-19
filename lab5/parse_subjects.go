@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"strings"
 	"text/scanner"
 )
 
@@ -16,13 +17,14 @@ func parseSubjects(r io.Reader) []*subject {
 			break
 		}
 		s.Scan()
-		s.Scan()
-		name := s.TokenText()
+
+		name := make([]string, 0)
 		for s.Scan() != '\n' {
+			name = append(name, s.TokenText())
 		}
 
 		s.Scan()
-		subjects = append(subjects, &subject{name: name, value: s.TokenText()})
+		subjects = append(subjects, &subject{name: strings.Join(name, ""), value: s.TokenText()})
 		s.Scan()
 	}
 
