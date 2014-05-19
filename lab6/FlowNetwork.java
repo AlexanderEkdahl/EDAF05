@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class FlowNetwork {
-	private HashMap<Integer, ArrayList<Edge>> adjacencyMatrix;
+	private HashMap<Integer, ArrayList<Edge>> adjacencyList;
 	private HashMap<Edge, Integer> flow;
 
 	enum VertexState {
@@ -16,51 +16,46 @@ public class FlowNetwork {
 
 	public static void main(String[] args) {
 		FlowNetwork g = new FlowNetwork();
-		g.parse();
+		g.parse(args[0]);
 		g.maxFlow(0, 54);
 	}
 
-	private void parse() {
-		BufferedReader bf = null;
-		int nbr;
+	private void parse(String filename) {
 		try {
-			bf = new BufferedReader(new FileReader(new File("fixtures/rail.txt")));
-			String line = bf.readLine();
-			nbr = Integer.parseInt(line);
-			for (int i = 0; i < nbr; i++) {
-				line = bf.readLine();
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));
+			String line = bufferedReader.readLine();
+			int n = Integer.parseInt(line);
+			for (int i = 0; i < n; i++) {
+				bufferedReader.readLine();
 				addVertex(i);
 			}
-			line = bf.readLine();
-			nbr = Integer.parseInt(line);
-			for (int i = 0; i < nbr; i++) {
-				line = bf.readLine();
+			line = bufferedReader.readLine();
+			n = Integer.parseInt(line);
+			for (int i = 0; i < n; i++) {
+				line = bufferedReader.readLine();
 				String[] s = line.split(" ");
-				if (Integer.parseInt(s[2]) == -1) {
-					s[2] = String.valueOf(Integer.MAX_VALUE);
-					// System.out.println("edge from" + Integer.parseInt(s[0]) +
-					// " to " + Integer.parseInt(s[1]) + "is infifnittyty");
+				int capacity = Integer.parseInt(s[2]);
+				if (capacity == -1) {
+					capacity = Integer.MAX_VALUE;
 				}
-				addEdge(Integer.parseInt(s[0]), Integer.parseInt(s[1]),
-						Integer.parseInt(s[2]));
+				addEdge(Integer.parseInt(s[0]), Integer.parseInt(s[1]), capacity);
 			}
 		} catch (IOException e) {
-			System.exit(0);
+			e.printStackTrace();
 		}
-//		 System.out.println(adj + " with size: " + adj.size());
 	}
 
 	public FlowNetwork() {
-		adjacencyMatrix = new HashMap<Integer, ArrayList<Edge>>();
+		adjacencyList = new HashMap<Integer, ArrayList<Edge>>();
 		flow = new HashMap<Edge, Integer>();
 	}
 
 	public void addVertex(int v) {
-		adjacencyMatrix.put(v, new ArrayList<Edge>());
+		adjacencyList.put(v, new ArrayList<Edge>());
 	}
 
 	public ArrayList<Edge> getEdges(int s) {
-		return adjacencyMatrix.get(s);
+		return adjacencyList.get(s);
 	}
 
 	public void addEdge(int u, int v, int w) {
@@ -68,14 +63,13 @@ public class FlowNetwork {
 		Edge redge = new Edge(v, u, w);
 		edge.redge = redge;
 		redge.redge = edge;
-		adjacencyMatrix.get(u).add(edge);
-		adjacencyMatrix.get(v).add(redge);
+		adjacencyList.get(u).add(edge);
+		adjacencyList.get(v).add(redge);
 		flow.put(edge, 0);
 		flow.put(redge, 0);
 	}
 
-	public ArrayList<Edge> findPath(int source, int sink, ArrayList<Edge> path,
-			VertexState[] state) {
+	public ArrayList<Edge> findPath(int source, int sink, ArrayList<Edge> path, VertexState[] state) {
 		state[source] = VertexState.Gray;
 		if (source == sink) {
 			return path;
@@ -98,8 +92,8 @@ public class FlowNetwork {
 	}
 
 	public ArrayList<Edge> findPath(int source, int sink) {
-		VertexState state[] = new VertexState[adjacencyMatrix.size()];
-		for (int i = 0; i < adjacencyMatrix.size(); i++){
+		VertexState state[] = new VertexState[adjacencyList.size()];
+		for (int i = 0; i < adjacencyList.size(); i++){
 			state[i] = VertexState.White;
 		}
 		return findPath(source, sink, new ArrayList<Edge>(), state);
@@ -124,27 +118,21 @@ public class FlowNetwork {
 
 		HashSet<Edge> visited = new HashSet<Edge>();
 		buildMinimumCut(source, visited);
-		printMinimumCut(visited);
 
-		int sum = 0;
-		for (Edge edge : getEdges(source)) {
-			sum += flow.get(edge);
-		}
-
-		System.out.println("Maximum flow: " + sum);
-	}
-
-	private void printMinimumCut(HashSet<Edge> visited) {
 		HashSet<Integer> vertices = new HashSet<Integer>();
 		for (Edge edge : visited) {
 			vertices.add(edge.source);
 		}
 
+		int sum = 0;
 		for (Edge edge : visited) {
 			if(!vertices.contains(edge.sink)) {
+				sum += flow.get(edge);
 				System.out.println(edge);
 			}
 		}
+
+		System.out.println("Maximum flow: " + sum);
 	}
 
 	public void buildMinimumCut(int source, HashSet<Edge> visited) {
